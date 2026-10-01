@@ -25,8 +25,10 @@ def create_tables():
 def seed_users(db: Session) -> None:
     """Seed demo users if they don't exist."""
     demo_users = [
-        {"email": "demo@fraudlens.app",  "password": "Demo@1234",  "role": "analyst"},
-        {"email": "admin@fraudlens.app", "password": "Admin@1234", "role": "admin"},
+        {"email": "demo@fraudlens.app",     "password": "Demo@1234",   "role": "analyst"},
+        {"email": "admin@fraudlens.app",    "password": "Admin@1234",  "role": "admin"},
+        {"email": "analyst@fraudlens.com",  "password": "analyst123",  "role": "analyst"},
+        {"email": "admin@fraudlens.com",    "password": "admin123",    "role": "admin"},
     ]
     for u in demo_users:
         if not db.query(User).filter(User.email == u["email"]).first():
