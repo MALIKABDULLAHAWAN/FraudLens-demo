@@ -26,7 +26,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ ./backend/
 COPY scripts/ ./scripts/
 COPY artifacts/ ./artifacts/
-COPY data/raw/ ./data/raw/
+
+# Create data directories
+RUN mkdir -p data/raw data/processed
 
 # Copy built frontend from previous stage
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
@@ -43,5 +45,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
   CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:${PORT}/health')"
 
-# Startup: seed DB then launch uvicorn
-CMD ["sh", "-c", "uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT} --workers 1"]
+# Startup: auto-generate & train if model missing, then launch uvicorn
+CMD ["sh", "-c", "python -c \"import os; os.path.exists('artifacts/xgb_model.joblib') or os.system('python scripts/generate_data.py && python scripts/train.py && python scripts/precompute_demo.py')\" && uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT} --workers 1"]
