@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Environment
+.env
+*.env.local
+*.env.production
+
+# ML artifacts (generated)
+artifacts/*.joblib
+artifacts/*.pkl
+artifacts/test_set.parquet
+
+# Database (generated)
+*.db
+*.sqlite
+
+# Data (generated)
+data/raw/
+data/processed/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Pytest
+.pytest_cache/
+htmlcov/
+.coverage
+
+# Docker
+.dockerignore
