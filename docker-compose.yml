@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    ports:
+      - "${PORT:-8000}:8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///./fraudlens.db}
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - LLM_BASE_URL=${LLM_BASE_URL:-http://host.docker.internal:11434/v1}
+      - LLM_API_KEY=${LLM_API_KEY:-ollama}
+      - LLM_MODEL=${LLM_MODEL:-llama3.1}
+      - LLM_TIMEOUT=${LLM_TIMEOUT:-8}
+      - FRAUD_THRESHOLD=${FRAUD_THRESHOLD:-0.5}
+      - ENVIRONMENT=production
+      - CORS_ORIGINS=http://localhost:${PORT:-8000}
+    volumes:
+      # Persist SQLite DB across restarts
+      - fraudlens_data:/app/fraudlens.db
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Optional PostgreSQL — comment out the `db` block to use SQLite
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: fraudlens
+      POSTGRES_PASSWORD: fraudlens
+      POSTGRES_DB: fraudlens
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fraudlens"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Expose only to app service (not host) in production
+    # ports:
+    #   - "5432:5432"
+
+  # Uncomment to run local Ollama LLM
+  # ollama:
+  #   image: ollama/ollama
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #   ports:
+  #     - "11434:11434"
+
+volumes:
+  fraudlens_data:
+  pg_data:
+  # ollama_data:
