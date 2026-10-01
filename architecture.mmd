@@ -1,0 +1,44 @@
+graph TD
+    %% Client & Frontend
+    subgraph Client ["Frontend Layer (React 18 + Vite + TS)"]
+        UI["Reviewer Dashboard & Case Detail UI"]
+        Gauge["SVG Risk Gauge & SHAP Bar Chart"]
+        DecisionPanel["Human Decision Panel (Approve / Reject / Escalate)"]
+    end
+
+    %% Backend Layer
+    subgraph Backend ["Backend API Layer (FastAPI & Python 3.11)"]
+        API["FastAPI App Factory & Router"]
+        Auth["JWT Auth & Rate Limiter (5 req/min)"]
+        Prometheus["Prometheus Metrics Collector"]
+    end
+
+    %% Machine Learning Subsystem
+    subgraph ML ["ML Explainability Engine"]
+        XGB["XGBoost Classifier"]
+        SHAP["SHAP TreeExplainer"]
+    end
+
+    %% LLM Agent Workflow
+    subgraph Agent ["LangGraph Agent Subsystem"]
+        Node1["Node 1: load_history"] --> Node2["Node 2: build_evidence"]
+        Node2 --> Node3["Node 3: generate_summary (Local Ollama / Fallback)"]
+        Node3 --> Node4["Node 4: finalize"]
+        Fallback["8-Second Timeout Fallback Generator"] -.-> Node4
+    end
+
+    %% Persistence
+    subgraph Database ["Persistence Layer"]
+        DB[(SQLAlchemy ORM - SQLite / PostgreSQL)]
+        AuditLog[(Immutable Audit Log)]
+    end
+
+    %% Data Flow Connections
+    UI -->|1. Authentication| Auth
+    UI -->|2. Score & Case Request| API
+    API -->|3. Feature Vector| XGB
+    XGB -->|4. Risk Probability| SHAP
+    SHAP -->|5. Attribution Vector| Node2
+    Node4 -->|6. Case Briefing| UI
+    DecisionPanel -->|7. Reviewer Action| AuditLog
+    AuditLog --> DB
